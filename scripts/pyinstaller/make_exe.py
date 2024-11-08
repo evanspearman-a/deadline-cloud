@@ -46,6 +46,11 @@ def make_exe(exe_zipfile: Path, cleanup=True) -> None:
     os.environ["PYINSTALLER_DEADLINE_CLI_DIST_PATH"] = str(DEADLINE_CLI_DIST_PATH)
     pyinstaller(str(DEADLINE_SPEC_PATH))
 
+    # Recursively touch every file in DEADLINE_DIST_PATH to
+    # make sure they have valid timestamps
+    for f in DEADLINE_DIST_PATH.glob("**/*"):
+        f.touch()
+
     # Zip up the Deadline CLI wrapper to the final output path
     shutil.make_archive(exe_zipfile.with_suffix(""), "zip", DEADLINE_DIST_PATH)
 
