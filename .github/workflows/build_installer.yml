@@ -1,0 +1,53 @@
+name: "Deadline Cloud Client Build Installer"
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        required: true
+        default: "linux"
+        type: choice
+        options:
+        - linux
+        - windows
+      branch:
+        required: true
+        type: string
+
+jobs:
+  BuildDeadlineCloudClientInstaller:
+    if: (github.repository == 'lucaseck/deadline-cloud')
+    name: Build Deadline Cloud Client Instaler
+    runs-on: ubuntu-latest
+    environment: mainline
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{inputs.branch}}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_CODEBUILD_MAINLINE_INSTALLER_ROLE }}
+          aws-region: us-west-2
+          mask-aws-account-id: true
+          role-duration-seconds: 3600
+
+      - name: Build Deadline Cloud Client Linux Installer
+        if: ${{inputs.os == 'linux'}}
+        uses: aws-actions/aws-codebuild-run-build@v1
+        with:
+          project-name: deadline-cloud-LinuxInstaller
+          source-version-override: ${{inputs.branch}}
+          hide-cloudwatch-logs: true
+
+      - name: Build Deadline Cloud Client Windows Installer
+        if: ${{inputs.os == 'windows'}}
+        uses: aws-actions/aws-codebuild-run-build@v1
+        with:
+          project-name: deadline-cloud-WindowsInstaller
+          source-version-override: ${{inputs.branch}}
+          hide-cloudwatch-logs: true
