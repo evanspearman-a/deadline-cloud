@@ -87,6 +87,10 @@ include = ["src/*", "hatch_version_hook.py", "THIRD_PARTY_LICENSES"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/deadline"]
 
+[tool.hatch.build.targets.binary]
+python-version = "3.9"
+
+
 [tool.mypy]
 # Enables the type-checker on the interior of functions without type annotations.
 check_untyped_defs = true
