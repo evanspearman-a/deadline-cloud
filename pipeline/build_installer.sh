@@ -6,3 +6,4 @@ set -e
 hatch run attributions:generate
 hatch run installer:prepare_artifacts
 hatch run installer:build_installer "$@"
+hatch run attributions:merge_versions

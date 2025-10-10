@@ -11,7 +11,6 @@ PLATFORM_MAP: dict[str, str] = {
     "Linux": "linux-x64-installer.run",
 }
 
-
 def merge_versions(
     python_dependencies_file: Path,
     software_versions_file: Path,
@@ -26,21 +25,46 @@ def merge_versions(
     with open(pyinstaller_version_file, "r") as f:
         pyinstaller_version = json.load(f)
 
+    # Some dependencies on macOS just use the version that was on the system at build time.
+    # These include zlib, bzip2, tcl, tk, and libffi.
+    # We can determine some of the versions at runtime, so we will do that here.
+    # This only works if this script is run by the same Python interpreter
+    # as is shipped with the pyinstaller build, which is the case in
+    # our pipelines.
+    # The bzip2 and libffi versions are not exposed by Python
+    if platform.system() == "Darwin":
+        # Import these here because we don't build with tcl/tk on Linux
+        import tkinter
+        import zlib
+
+        zlib_version = zlib.ZLIB_VERSION
+        tcl_version = tkinter.TclVersion
+        tk_version = tkinter.TkVersion
+
+        python_dependencies["zlib"] = zlib_version
+        python_dependencies["tcl"] = tcl_version
+        python_dependencies["tk"] = tk_version
+
     combined = {}
 
-    for versions in [python_dependencies, software_versions, pyinstaller_version]:
+    for versions in [software_versions, pyinstaller_version]:
         for name, version in versions.items():
             if name not in combined:
                 combined[name] = version
             elif combined[name] != version:
                 raise RuntimeError(f"Conflicting versions for {name}: {version}, {combined[name]}")
 
+    result = {
+        "python": combined,
+        "native": python_dependencies,
+    }
+
     output_file_path = (
         output_prefix / f"{installer_name}-{PLATFORM_MAP[platform.system()]}.dependencies.json"
     )
 
     with open(output_file_path, "w", encoding="utf8") as f:
-        json.dump(combined, f)
+        json.dump(result, f)
 
 
 def _main() -> None:
