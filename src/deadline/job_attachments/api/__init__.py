@@ -9,7 +9,7 @@ __all__ = [
     "hash_attachments",
 ]
 
-from ...common.path_utils import (
+from .._path_summarization import (
     human_readable_file_size,
     summarize_paths_by_nested_directory,
     summarize_paths_by_sequence,

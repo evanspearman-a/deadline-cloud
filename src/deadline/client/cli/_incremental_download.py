@@ -20,7 +20,7 @@ from botocore.client import BaseClient  # type: ignore[import]
 from ..exceptions import DeadlineOperationError
 from ..api._list_jobs_by_filter_expression import _list_jobs_by_filter_expression
 from ..api._session import get_session_client
-from ...common.path_utils import summarize_path_list, human_readable_file_size
+from ...job_attachments.api import summarize_path_list, human_readable_file_size
 from ...job_attachments._incremental_downloads.incremental_download_state import (
     IncrementalDownloadState,
     IncrementalDownloadJob,
